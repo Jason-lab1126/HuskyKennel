@@ -4,7 +4,7 @@
 
 ---
 
-## 🛠️ What it does
+## What it does
 
 - Asks about your preferences: room type, budget, gender, smoking/pet status, furniture, flooring, location, lifestyle, etc.
 - Searches listings from:
@@ -18,7 +18,7 @@
 
 ---
 
-## 🎯 Who it’s for
+## Who it’s for
 
 - UW students looking for housing near campus  
 - Interns and visiting researchers staying in Seattle  
@@ -26,7 +26,7 @@
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 - **Frontend**: TypeScript + TailwindCSS  
 - **Backend**: tRPC API routes  
@@ -37,7 +37,7 @@
 
 ---
 
-## 🚀 How to run it locally
+## How to run it locally
 
 1. **Clone the repo**
    ```bash
@@ -61,7 +61,7 @@ npm run dev
 App should now be running at:
 http://localhost:3000](https://wondrous-tulumba-551596.netlify.app
 
-🧪 What’s coming next
+What’s coming next
  Auto-sync housing posts from Facebook, Reddit, Craigslist
 
  Swipe UI for mobile-friendly browsing
@@ -74,13 +74,13 @@ http://localhost:3000](https://wondrous-tulumba-551596.netlify.app
 
  Sublet submission flow for individuals
 
-🐶 Why it's called HuskyKennel
+Why it's called HuskyKennel
 Because every Husky deserves a good home 🛋️
 And yeah, it's a pun — that’s kind of the vibe.
 
-👨‍💻 Author
+Author
 Created by **Zhijian Xu** - A passionate developer building tools to help UW students find their perfect home.
 
-📄 License
+License
 MIT License
 Copyright © 2025 Zhijian Xu
