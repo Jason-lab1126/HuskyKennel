@@ -211,7 +211,6 @@ export default function Landing() {
               Browse Listings
             </Link>
           </div>
-          </p>
         </div>
       </section>
     </div>
