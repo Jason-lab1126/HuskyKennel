@@ -78,6 +78,9 @@ http://localhost:3000
 Because every Husky deserves a good home 🛋️
 And yeah, it's a pun — that’s kind of the vibe.
 
+👨‍💻 Author
+Created by **Zhijian Xu** - A passionate developer building tools to help UW students find their perfect home.
+
 📄 License
 MIT License
 Copyright © 2025 Zhijian Xu

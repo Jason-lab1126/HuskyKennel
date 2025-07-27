@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "author": "Zhijian Xu",
+  "description": "AI-powered housing matching platform for UW students in the U District",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

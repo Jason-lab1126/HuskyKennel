@@ -152,6 +152,16 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Attribution Section */}
+      <section className="py-12 bg-purple-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-xl font-semibold mb-2">Built for Huskies, by a Husky 🐾</h3>
+          <p className="text-purple-100">
+            Created by <span className="font-semibold text-yellow-300">Zhijian Xu</span>, a UW student who understands the struggle of finding great housing in the U District.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

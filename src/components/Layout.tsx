@@ -75,6 +75,15 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-sm text-gray-500">
+            <p>© 2025 HuskeyHome. Made with ❤️ by <span className="font-medium text-purple-600">Zhijian Xu</span> for UW students.</p>
+          </div>
+        </div>
+      </footer>
+
       {/* Mobile Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="flex justify-around py-2">
