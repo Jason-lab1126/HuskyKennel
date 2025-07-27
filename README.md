@@ -59,7 +59,7 @@ OPENAI_API_KEY=your-openai-key (optional for summaries)
 5. Start the development server
 npm run dev
 App should now be running at:
-http://localhost:3000
+http://localhost:3000](https://wondrous-tulumba-551596.netlify.app
 
 🧪 What’s coming next
  Auto-sync housing posts from Facebook, Reddit, Craigslist
