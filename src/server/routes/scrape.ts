@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { redditScraper } from '../scrapers/reddit';
-import { facebookScraper } from '../scrapers/facebook';
 import { apartmentsScraper } from '../scrapers/apartments';
 import { db } from '../services/database';
 import { ScrapeResult } from '../types';
@@ -18,31 +17,14 @@ router.get('/', async (req: Request, res: Response) => {
     // Run Reddit scraper
     console.log('📱 Scraping Reddit...');
     try {
-      const redditResult = await redditScraper.scrape();
+      const redditResult = await redditScraper.scrapeReddit();
       results.push(redditResult);
       totalListings += redditResult.count;
       console.log(`✅ Reddit: ${redditResult.count} listings`);
     } catch (error) {
       console.error('❌ Reddit scraping failed:', error);
       results.push({
-        source: 'reddit',
-        success: false,
-        count: 0,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-
-    // Run Facebook scraper
-    console.log('📘 Scraping Facebook...');
-    try {
-      const facebookResult = await facebookScraper.scrape();
-      results.push(facebookResult);
-      totalListings += facebookResult.count;
-      console.log(`✅ Facebook: ${facebookResult.count} listings`);
-    } catch (error) {
-      console.error('❌ Facebook scraping failed:', error);
-      results.push({
-        source: 'facebook',
+        source: 'Reddit',
         success: false,
         count: 0,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -52,7 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
     // Run Apartments scraper
     console.log('🏢 Scraping Apartment websites...');
     try {
-      const apartmentsResult = await apartmentsScraper.scrape();
+      const apartmentsResult = await apartmentsScraper.scrapeApartments();
       results.push(apartmentsResult);
       totalListings += apartmentsResult.count;
       console.log(`✅ Apartments: ${apartmentsResult.count} listings`);
@@ -124,7 +106,7 @@ router.get('/', async (req: Request, res: Response) => {
 // Individual scraper endpoints
 router.get('/reddit', async (req: Request, res: Response) => {
   try {
-    const result = await redditScraper.scrape();
+    const result = await redditScraper.scrapeReddit();
     res.json(result);
   } catch (error) {
     res.status(500).json({
@@ -134,21 +116,9 @@ router.get('/reddit', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/facebook', async (req: Request, res: Response) => {
-  try {
-    const result = await facebookScraper.scrape();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({
-      error: 'Facebook scraping failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
 router.get('/apartments', async (req: Request, res: Response) => {
   try {
-    const result = await apartmentsScraper.scrape();
+    const result = await apartmentsScraper.scrapeApartments();
     res.json(result);
   } catch (error) {
     res.status(500).json({

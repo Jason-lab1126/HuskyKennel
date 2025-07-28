@@ -18,8 +18,9 @@ export interface HousingListing {
     email: string;
     phone?: string;
   };
-  source: 'manual' | 'reddit' | 'facebook' | 'apartments';
+  source: 'manual' | 'reddit' | 'facebook' | 'apartments' | 'Reddit' | 'Trailside' | 'Strata' | 'The M' | 'Theory UDistrict' | 'The Standard' | 'Muriel\'s Landing' | 'HERE Seattle' | 'Bridge11' | 'Tripalink';
   sourceUrl?: string;
+  scrapedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
