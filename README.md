@@ -52,8 +52,8 @@ cp .env.example .env
 
 4. Fill in your environment variables
 ini
-SUPABASE_URL=your-supabase-url
-SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 OPENAI_API_KEY=your-openai-key (optional for summaries)
 
 5. Start the development server
