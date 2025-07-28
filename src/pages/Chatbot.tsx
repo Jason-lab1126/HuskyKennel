@@ -12,7 +12,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm your AI housing assistant for the U District. I can help you find the perfect housing based on your specific needs and preferences. What are you looking for?",
+      text: "Hi! I'm your AI housing assistant for the U District. I can help you find the perfect housing based on your specific needs and preferences. What are you looking for?\n\n⚠️ Note: The AI backend is currently unavailable. Please make sure the backend server is running on port 3001.",
       sender: 'ai',
       timestamp: new Date()
     }
@@ -20,6 +20,7 @@ export default function Chatbot() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -29,6 +30,37 @@ export default function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Check backend status on component mount
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${apiUrl}/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          setBackendStatus('online');
+          // Update welcome message when backend is online
+          setMessages(prev => prev.map(msg => 
+            msg.id === '1' ? {
+              ...msg,
+              text: "Hi! I'm your AI housing assistant for the U District. I can help you find the perfect housing based on your specific needs and preferences. What are you looking for?"
+            } : msg
+          ));
+        } else {
+          setBackendStatus('offline');
+        }
+      } catch (error) {
+        setBackendStatus('offline');
+        console.log('Backend health check failed:', error);
+      }
+    };
+
+    checkBackendStatus();
+  }, []);
 
   const sendMessageToAPI = async (message: string): Promise<string> => {
     try {
@@ -52,12 +84,21 @@ export default function Chatbot() {
       return data.response || 'Sorry, I couldn\'t process your request.';
     } catch (error) {
       console.error('Error calling chat API:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to the AI backend server. Please ensure the backend is running on port 3001.');
+      }
       throw new Error('Failed to get response from AI assistant. Please try again.');
     }
   };
 
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
+
+    // Check if backend is offline before sending
+    if (backendStatus === 'offline') {
+      setError('Backend server is offline. Please start the backend server by running "cd src/server && npm run dev" in your terminal.');
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -84,12 +125,15 @@ export default function Chatbot() {
       setMessages(prev => [...prev, aiMessage]);
     } catch (err) {
       console.error('Error getting AI response:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get response');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get response';
+      setError(errorMessage);
 
       // Add error message to chat
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again or check your connection.',
+        text: backendStatus === 'offline' 
+          ? 'The AI backend server is not running. Please start the backend server by running "cd src/server && npm run dev" in your terminal.'
+          : 'Sorry, I encountered an error. Please try again or check your connection.',
         sender: 'ai',
         timestamp: new Date()
       };
@@ -141,6 +185,44 @@ export default function Chatbot() {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-red-800">{error}</p>
+                {backendStatus === 'offline' && (
+                  <p className="text-xs text-red-600 mt-1">
+                    Run this command in your terminal: <code className="bg-red-100 px-1 rounded">cd src/server && npm run dev</code>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Backend Status Indicator */}
+        {backendStatus !== 'checking' && (
+          <div className={`mb-4 border rounded-lg p-4 ${
+            backendStatus === 'online' 
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className={`w-3 h-3 rounded-full ${
+                  backendStatus === 'online' 
+                    ? 'bg-green-400' 
+                    : 'bg-yellow-400'
+                }`}></div>
+              </div>
+              <div className="ml-3">
+                <p className={`text-sm ${
+                  backendStatus === 'online' 
+                    ? 'text-green-800' 
+                    : 'text-yellow-800'
+                }`}>
+                  AI Backend: {backendStatus === 'online' ? 'Connected' : 'Disconnected'}
+                </p>
+                {backendStatus === 'offline' && (
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Start the backend with: <code className="bg-yellow-100 px-1 rounded">cd src/server && npm run dev</code>
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -231,16 +313,20 @@ export default function Chatbot() {
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Describe your ideal housing situation..."
+                  placeholder={
+                    backendStatus === 'offline' 
+                      ? "Backend server offline - please start the server first..."
+                      : "Describe your ideal housing situation..."
+                  }
                   className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   rows={1}
                   style={{ minHeight: '44px', maxHeight: '120px' }}
-                  disabled={isTyping}
+                  disabled={isTyping || backendStatus === 'offline'}
                 />
               </div>
               <button
                 onClick={handleSendMessage}
-                disabled={!inputText.trim() || isTyping}
+                disabled={!inputText.trim() || isTyping || backendStatus === 'offline'}
                 className="bg-purple-600 text-white p-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send size={20} />
