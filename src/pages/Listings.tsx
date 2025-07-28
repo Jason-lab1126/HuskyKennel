@@ -24,12 +24,16 @@ export default function Listings() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Starting to fetch listings...');
+
       const data = await db.getListings(filters);
+      console.log('Fetched data:', data);
+
       setListings(data);
       setFilteredListings(data);
     } catch (err) {
       console.error('Error fetching listings:', err);
-      setError('Failed to load listings. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load listings. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -406,24 +410,33 @@ export default function Listings() {
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No listings found</h3>
-            <p className="text-gray-600 mb-4">Try adjusting your search terms or filters</p>
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilters({
-                  minRent: 0,
-                  maxRent: 5000,
-                  housingType: [],
-                  petFriendly: null,
-                  furnished: null,
-                  source: 'all'
-                });
-              }}
-              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Clear All Filters
-            </button>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {listings.length === 0 ? 'No listings available right now' : 'No listings found'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {listings.length === 0
+                ? 'Please check back soon! Our scrapers are working to find the latest housing options.'
+                : 'Try adjusting your search terms or filters'
+              }
+            </p>
+            {listings.length > 0 && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilters({
+                    minRent: 0,
+                    maxRent: 5000,
+                    housingType: [],
+                    petFriendly: null,
+                    furnished: null,
+                    source: 'all'
+                  });
+                }}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            )}
           </div>
         )}
 

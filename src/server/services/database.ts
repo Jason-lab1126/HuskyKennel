@@ -20,18 +20,51 @@ export class DatabaseService {
   }
 
   async getListings(filters?: any): Promise<HousingListing[]> {
-    let query = supabase.from('housing_listings').select('*');
+    let query = supabase.from('listings').select('*');
 
     if (filters?.minRent) query = query.gte('rent', filters.minRent);
     if (filters?.maxRent) query = query.lte('rent', filters.maxRent);
     if (filters?.housingType) query = query.in('type', filters.housingType);
     if (filters?.petFriendly !== undefined) query = query.eq('petFriendly', filters.petFriendly);
+    if (filters?.furnished !== undefined) query = query.eq('furnished', filters.furnished);
     if (filters?.neighborhoods) query = query.in('neighborhood', filters.neighborhoods);
 
-    const { data, error } = await query.order('createdAt', { ascending: false });
+    const { data, error } = await query.order('scraped_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
+  }
+
+  async getMatchingListings(preferences: any, limit: number = 5): Promise<HousingListing[]> {
+    try {
+      let query = supabase.from('listings').select('*');
+
+      // Apply preference filters
+      if (preferences.budget?.min) query = query.gte('rent', preferences.budget.min);
+      if (preferences.budget?.max) query = query.lte('rent', preferences.budget.max);
+
+      if (preferences.housingType && preferences.housingType.length > 0) {
+        query = query.in('type', preferences.housingType);
+      }
+
+      if (preferences.lifestyle?.pets !== undefined) {
+        query = query.eq('petFriendly', preferences.lifestyle.pets);
+      }
+
+      if (preferences.preferredLocations && preferences.preferredLocations.length > 0) {
+        query = query.in('neighborhood', preferences.preferredLocations);
+      }
+
+      const { data, error } = await query
+        .order('scraped_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting matching listings:', error);
+      return [];
+    }
   }
 
   async getListingById(id: string): Promise<HousingListing | null> {

@@ -25,6 +25,9 @@ router.post('/', async (req: Request, res: Response) => {
       { role: 'assistant' as const, content: msg.response }
     ]);
 
+    // Get user preferences for potential recommendations
+    const userPreferences = await db.getPreferences(userId);
+
     // Create system prompt for housing assistant
     const systemPrompt = `You are HuskyKennel, an AI housing assistant for UW students in the U District.
     You help students find housing by:
@@ -49,7 +52,48 @@ router.post('/', async (req: Request, res: Response) => {
       temperature: 0.7,
     });
 
-    const response = completion.choices[0]?.message?.content || 'Sorry, I couldn\'t process your request.';
+    let response = completion.choices[0]?.message?.content || 'Sorry, I couldn\'t process your request.';
+
+    // Check if user is asking for recommendations or has completed preferences
+    const isAskingForRecommendations = message.toLowerCase().includes('recommend') ||
+                                      message.toLowerCase().includes('find') ||
+                                      message.toLowerCase().includes('suggest') ||
+                                      message.toLowerCase().includes('match') ||
+                                      message.toLowerCase().includes('housing') ||
+                                      message.toLowerCase().includes('apartment');
+
+    // If user has preferences and is asking for recommendations, provide them
+    if (userPreferences && isAskingForRecommendations) {
+      try {
+        const matchingListings = await db.getMatchingListings(userPreferences, 5);
+
+        if (matchingListings.length > 0) {
+          const recommendationsText = matchingListings.map((listing, index) => {
+            const distance = '0.5 miles'; // Placeholder - could be calculated based on coordinates
+            return `${index + 1}. **${listing.title}** - $${listing.rent}/month\n   📍 ${listing.neighborhood} (${distance} to UW)\n   🏠 ${listing.type} • ${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath\n   ${listing.petFriendly ? '🐕 Pet-friendly' : '🚫 No pets'} • ${listing.furnished ? '🛋️ Furnished' : '📦 Unfurnished'}`;
+          }).join('\n\n');
+
+          response += `\n\n🏠 **Here are your top ${matchingListings.length} housing matches:**\n\n${recommendationsText}\n\n💡 *These listings are sorted by recency and match your preferences for budget, location, and amenities.*`;
+        } else {
+          response += `\n\n😔 **We couldn't find a perfect match based on your preferences, but here are a few general options you may consider:**\n\n`;
+
+          // Get some general listings as fallback
+          const fallbackListings = await db.getListings({});
+          const topListings = fallbackListings.slice(0, 3);
+
+          if (topListings.length > 0) {
+            const fallbackText = topListings.map((listing, index) => {
+              return `${index + 1}. **${listing.title}** - $${listing.rent}/month\n   📍 ${listing.neighborhood}\n   🏠 ${listing.type} • ${listing.bedrooms || 0} bed, ${listing.bathrooms || 0} bath`;
+            }).join('\n\n');
+
+            response += fallbackText;
+          }
+        }
+      } catch (error) {
+        console.error('Error getting recommendations:', error);
+        // Continue with original response if recommendations fail
+      }
+    }
 
     // Save the chat message
     const chatMessage: ChatMessage = {
