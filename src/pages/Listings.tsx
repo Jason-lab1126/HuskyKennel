@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Heart, Filter, Search, Star } from 'lucide-react';
+import { MapPin, Heart, Filter, Search, Star, Loader2 } from 'lucide-react';
 import { HousingListing } from '../types';
-import { mockListings } from '../utils/mockData';
+import { db } from '../lib/supabase';
 
 export default function Listings() {
   const [listings, setListings] = useState<HousingListing[]>([]);
   const [filteredListings, setFilteredListings] = useState<HousingListing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     minRent: 0,
     maxRent: 5000,
@@ -17,18 +19,33 @@ export default function Listings() {
     source: 'all'
   });
 
-  useEffect(() => {
-    setListings(mockListings);
-    setFilteredListings(mockListings);
-  }, []);
+  // Fetch listings from Supabase
+  const fetchListings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await db.getListings(filters);
+      setListings(data);
+      setFilteredListings(data);
+    } catch (err) {
+      console.error('Error fetching listings:', err);
+      setError('Failed to load listings. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
+    fetchListings();
+  }, []);
+
+    useEffect(() => {
     let filtered = [...listings];
 
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(listing =>
-        listing.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         listing.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
         listing.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -41,22 +58,55 @@ export default function Listings() {
       if (filters.petFriendly !== null && listing.petFriendly !== filters.petFriendly) return false;
       if (filters.furnished !== null && listing.furnished !== filters.furnished) return false;
       if (filters.source !== 'all' && listing.source !== filters.source) return false;
-      
+
       return true;
     });
 
     setFilteredListings(filtered);
   }, [listings, searchTerm, filters]);
 
-  const getSourceBadge = (source: string) => {
-    const badges = {
+    const getSourceBadge = (source: string) => {
+    const badges: Record<string, { color: string; label: string }> = {
       reddit: { color: 'bg-orange-100 text-orange-800', label: 'Reddit' },
+      Reddit: { color: 'bg-orange-100 text-orange-800', label: 'Reddit' },
       facebook: { color: 'bg-blue-100 text-blue-800', label: 'Facebook' },
-      apartment: { color: 'bg-green-100 text-green-800', label: 'Apartment' },
-      sublease: { color: 'bg-purple-100 text-purple-800', label: 'Official Sublease' }
+      apartments: { color: 'bg-green-100 text-green-800', label: 'Apartments' },
+      manual: { color: 'bg-purple-100 text-purple-800', label: 'Manual' },
+      // Apartment communities
+      Trailside: { color: 'bg-green-100 text-green-800', label: 'Trailside' },
+      Strata: { color: 'bg-green-100 text-green-800', label: 'Strata' },
+      'The M': { color: 'bg-green-100 text-green-800', label: 'The M' },
+      'Theory UDistrict': { color: 'bg-green-100 text-green-800', label: 'Theory' },
+      'The Standard': { color: 'bg-green-100 text-green-800', label: 'Standard' },
+      'Muriel\'s Landing': { color: 'bg-green-100 text-green-800', label: 'Muriel\'s' },
+      'HERE Seattle': { color: 'bg-green-100 text-green-800', label: 'HERE' },
+      Bridge11: { color: 'bg-green-100 text-green-800', label: 'Bridge11' },
+      Tripalink: { color: 'bg-green-100 text-green-800', label: 'Tripalink' },
+      Nolan: { color: 'bg-green-100 text-green-800', label: 'Nolan' },
+      Nora: { color: 'bg-green-100 text-green-800', label: 'Nora' },
+      'Hub U District': { color: 'bg-green-100 text-green-800', label: 'Hub' },
+      LaVita: { color: 'bg-green-100 text-green-800', label: 'LaVita' },
+      Viola: { color: 'bg-green-100 text-green-800', label: 'Viola' },
+      Sora: { color: 'bg-green-100 text-green-800', label: 'Sora' },
+      Greta: { color: 'bg-green-100 text-green-800', label: 'Greta' },
+      'Fifty-Two': { color: 'bg-green-100 text-green-800', label: 'Fifty-Two' },
+      'The Stax': { color: 'bg-green-100 text-green-800', label: 'Stax' },
+      Arista: { color: 'bg-green-100 text-green-800', label: 'Arista' },
+      Parsonage: { color: 'bg-green-100 text-green-800', label: 'Parsonage' },
+      'U Place': { color: 'bg-green-100 text-green-800', label: 'U Place' },
+      'Twelve at U District': { color: 'bg-green-100 text-green-800', label: 'Twelve' },
+      'ōLiv Seattle': { color: 'bg-green-100 text-green-800', label: 'ōLiv' },
+      'The Accolade': { color: 'bg-green-100 text-green-800', label: 'Accolade' },
+      'Verve Flats': { color: 'bg-green-100 text-green-800', label: 'Verve' },
+      'Helix Ellipse': { color: 'bg-green-100 text-green-800', label: 'Helix' },
+      Montclair: { color: 'bg-green-100 text-green-800', label: 'Montclair' },
+      'Ori on the Ave': { color: 'bg-green-100 text-green-800', label: 'Ori' },
+      Sundodger: { color: 'bg-green-100 text-green-800', label: 'Sundodger' },
+      'The Corydon': { color: 'bg-green-100 text-green-800', label: 'Corydon' },
+      'Ivy Ridge': { color: 'bg-green-100 text-green-800', label: 'Ivy Ridge' }
     };
-    
-    const badge = badges[source as keyof typeof badges] || badges.apartment;
+
+    const badge = badges[source] || { color: 'bg-gray-100 text-gray-800', label: source };
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
         {badge.label}
@@ -143,9 +193,9 @@ export default function Listings() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Pet Friendly</label>
                   <select
                     value={filters.petFriendly === null ? '' : filters.petFriendly.toString()}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      petFriendly: e.target.value === '' ? null : e.target.value === 'true' 
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
+                      petFriendly: e.target.value === '' ? null : e.target.value === 'true'
                     }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                   >
@@ -158,9 +208,9 @@ export default function Listings() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Furnished</label>
                   <select
                     value={filters.furnished === null ? '' : filters.furnished.toString()}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      furnished: e.target.value === '' ? null : e.target.value === 'true' 
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
+                      furnished: e.target.value === '' ? null : e.target.value === 'true'
                     }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                   >
@@ -177,10 +227,38 @@ export default function Listings() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                   >
                     <option value="all">All Sources</option>
-                    <option value="apartment">Apartments</option>
-                    <option value="sublease">Subleases</option>
-                    <option value="reddit">Reddit</option>
-                    <option value="facebook">Facebook</option>
+                    <option value="Reddit">Reddit</option>
+                    <option value="Trailside">Trailside</option>
+                    <option value="Strata">Strata</option>
+                    <option value="The M">The M</option>
+                    <option value="Theory UDistrict">Theory UDistrict</option>
+                    <option value="The Standard">The Standard</option>
+                    <option value="Muriel's Landing">Muriel's Landing</option>
+                    <option value="HERE Seattle">HERE Seattle</option>
+                    <option value="Bridge11">Bridge11</option>
+                    <option value="Tripalink">Tripalink</option>
+                    <option value="Nolan">Nolan</option>
+                    <option value="Nora">Nora</option>
+                    <option value="Hub U District">Hub U District</option>
+                    <option value="LaVita">LaVita</option>
+                    <option value="Viola">Viola</option>
+                    <option value="Sora">Sora</option>
+                    <option value="Greta">Greta</option>
+                    <option value="Fifty-Two">Fifty-Two</option>
+                    <option value="The Stax">The Stax</option>
+                    <option value="Arista">Arista</option>
+                    <option value="Parsonage">Parsonage</option>
+                    <option value="U Place">U Place</option>
+                    <option value="Twelve at U District">Twelve at U District</option>
+                    <option value="ōLiv Seattle">ōLiv Seattle</option>
+                    <option value="The Accolade">The Accolade</option>
+                    <option value="Verve Flats">Verve Flats</option>
+                    <option value="Helix Ellipse">Helix Ellipse</option>
+                    <option value="Montclair">Montclair</option>
+                    <option value="Ori on the Ave">Ori on the Ave</option>
+                    <option value="Sundodger">Sundodger</option>
+                    <option value="The Corydon">The Corydon</option>
+                    <option value="Ivy Ridge">Ivy Ridge</option>
                   </select>
                 </div>
               </div>
@@ -195,102 +273,135 @@ export default function Listings() {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <Loader2 className="animate-spin mx-auto mb-4 text-purple-600" size={48} />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading listings...</h3>
+            <p className="text-gray-600">Fetching the latest housing options from our database</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="text-red-400 mb-4">
+              <Search size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Error loading listings</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={fetchListings}
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
         {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredListings.map((listing) => (
-            <div key={listing.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-              {/* Image */}
-              <div className="relative h-48">
-                <img
-                  src={listing.images[0]}
-                  alt={listing.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-3 left-3">
-                  {getSourceBadge(listing.source)}
-                </div>
-                <div className="absolute top-3 right-3">
-                  <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50">
-                    <Heart size={16} className="text-gray-400 hover:text-red-500" />
-                  </button>
-                </div>
-                <div className="absolute bottom-3 left-3">
-                  <div className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-                    {listing.images.length} photos
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredListings.map((listing) => (
+              <div key={listing.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                {/* Image */}
+                <div className="relative h-48">
+                  <img
+                    src={listing.images[0] || 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                    alt={listing.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 left-3">
+                    {getSourceBadge(listing.source)}
                   </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-gray-900 text-lg">{listing.name}</h3>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-purple-600">
-                      ${listing.rent.toLocaleString()}
+                  <div className="absolute top-3 right-3">
+                    <button className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50">
+                      <Heart size={16} className="text-gray-400 hover:text-red-500" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-3 left-3">
+                    <div className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
+                      {listing.images.length || 1} photos
                     </div>
-                    <div className="text-xs text-gray-500">per month</div>
                   </div>
-                </div>
-
-                <div className="flex items-center text-gray-600 mb-3">
-                  <MapPin size={14} className="mr-1" />
-                  <span className="text-sm">{listing.location.neighborhood}</span>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                  <span>{listing.type}</span>
-                  <span>•</span>
-                  <span>{listing.bedrooms} bed, {listing.bathrooms} bath</span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className={listing.petFriendly ? 'text-green-600' : 'text-gray-400'}>
-                      {listing.petFriendly ? '🐕' : '🚫'} Pets
-                    </span>
-                    <span className={listing.furnished ? 'text-blue-600' : 'text-gray-400'}>
-                      {listing.furnished ? '🛋️' : '📦'} {listing.furnished ? 'Furnished' : 'Unfurnished'}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {listing.description}
-                </p>
-
-                {/* Amenities */}
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {listing.amenities.slice(0, 3).map((amenity, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
-                    >
-                      {amenity}
-                    </span>
-                  ))}
-                  {listing.amenities.length > 3 && (
-                    <span className="text-gray-500 text-xs px-2 py-1">
-                      +{listing.amenities.length - 3} more
-                    </span>
+                  {listing.scrapedAt && (
+                    <div className="absolute bottom-3 right-3">
+                      <div className="bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                        {new Date(listing.scrapedAt).toLocaleDateString()}
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                    Contact
-                  </button>
-                  <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <MapPin size={16} />
-                  </button>
+                {/* Content */}
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-gray-900 text-lg">{listing.title}</h3>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-purple-600">
+                        ${listing.rent.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">per month</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center text-gray-600 mb-3">
+                    <MapPin size={14} className="mr-1" />
+                    <span className="text-sm">{listing.neighborhood || listing.address}</span>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                    <span>{listing.type}</span>
+                    <span>•</span>
+                    <span>{listing.bedrooms || 0} bed, {listing.bathrooms || 0} bath</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className={listing.petFriendly ? 'text-green-600' : 'text-gray-400'}>
+                        {listing.petFriendly ? '🐕' : '🚫'} Pets
+                      </span>
+                      <span className={listing.furnished ? 'text-blue-600' : 'text-gray-400'}>
+                        {listing.furnished ? '🛋️' : '📦'} {listing.furnished ? 'Furnished' : 'Unfurnished'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {listing.description}
+                  </p>
+
+                  {/* Source and URL */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                    <span>Source: {listing.source}</span>
+                    {listing.sourceUrl && (
+                      <a
+                        href={listing.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:text-purple-700 underline"
+                      >
+                        View Original
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                      Contact
+                    </button>
+                    <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                      <MapPin size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredListings.length === 0 && (
+        {!loading && !error && filteredListings.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />

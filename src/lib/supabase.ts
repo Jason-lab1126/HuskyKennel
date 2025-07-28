@@ -13,21 +13,23 @@ export const db = {
       .insert([preferences])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
 
   async getListings(filters?: any) {
-    let query = supabase.from('housing_listings').select('*');
-    
+    let query = supabase.from('listings').select('*');
+
     if (filters?.minRent) query = query.gte('rent', filters.minRent);
     if (filters?.maxRent) query = query.lte('rent', filters.maxRent);
-    if (filters?.housingType) query = query.in('type', filters.housingType);
+    if (filters?.housingType && filters.housingType.length > 0) query = query.in('type', filters.housingType);
     if (filters?.petFriendly !== undefined) query = query.eq('petFriendly', filters.petFriendly);
-    
-    const { data, error } = await query.order('createdAt', { ascending: false });
-    
+    if (filters?.furnished !== undefined) query = query.eq('furnished', filters.furnished);
+    if (filters?.source && filters.source !== 'all') query = query.eq('source', filters.source);
+
+    const { data, error } = await query.order('scraped_at', { ascending: false });
+
     if (error) throw error;
     return data || [];
   },
@@ -38,7 +40,7 @@ export const db = {
       .insert([{ user_id: userId, results, created_at: new Date() }])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }

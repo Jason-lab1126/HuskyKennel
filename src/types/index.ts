@@ -35,33 +35,30 @@ export interface UserPreferences {
 }
 
 export interface HousingListing {
-  id: string;
-  name: string;
-  address: string;
-  images: string[];
-  rent: number;
-  type: string;
-  bedrooms: number;
-  bathrooms: number;
-  amenities: string[];
+  id?: string;
+  title: string;
   description: string;
-  source: 'reddit' | 'facebook' | 'apartment' | 'sublease';
-  contactInfo: {
-    email?: string;
-    phone?: string;
-    source_url?: string;
-  };
-  location: {
-    lat: number;
-    lng: number;
-    neighborhood: string;
-  };
-  availability: Date;
+  rent: number;
+  type: 'apartment' | 'house' | 'studio' | 'shared';
+  bedrooms?: number;
+  bathrooms?: number;
+  address: string;
+  neighborhood: string;
   petFriendly: boolean;
   furnished: boolean;
-  utilities: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  utilities: boolean;
+  parking: boolean;
+  images: string[];
+  contactInfo: {
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  source: 'manual' | 'reddit' | 'facebook' | 'apartments' | 'Reddit' | 'Trailside' | 'Strata' | 'The M' | 'Theory UDistrict' | 'The Standard' | 'Muriel\'s Landing' | 'HERE Seattle' | 'Bridge11' | 'Tripalink' | 'Nolan' | 'Nora' | 'Hub U District' | 'LaVita' | 'Viola' | 'Sora' | 'Greta' | 'Fifty-Two' | 'The Stax' | 'Arista' | 'Parsonage' | 'U Place' | 'Twelve at U District' | 'ōLiv Seattle' | 'The Accolade' | 'Verve Flats' | 'Helix Ellipse' | 'Montclair' | 'Ori on the Ave' | 'Sundodger' | 'The Corydon' | 'Ivy Ridge';
+  sourceUrl?: string;
+  scrapedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface MatchResult {
