@@ -1,13 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Only create client if we have real credentials
+export const supabase = (supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder'))
+  ? null
+  : createClient(supabaseUrl, supabaseAnonKey);
 
 // Database operations
 export const db = {
   async saveUserPreferences(preferences: any) {
+    if (!supabase) {
+      console.warn('Supabase not configured. Please update your .env file with actual Supabase credentials.');
+      return Promise.resolve({ id: 'mock-id', ...preferences });
+    }
+    
     const { data, error } = await supabase
       .from('user_preferences')
       .insert([preferences])
@@ -19,6 +27,11 @@ export const db = {
   },
 
   async getListings(filters?: any) {
+    if (!supabase) {
+      console.warn('Supabase not configured. Returning mock data.');
+      return Promise.resolve([]);
+    }
+    
     let query = supabase.from('listings').select('*');
 
     if (filters?.minRent) query = query.gte('rent', filters.minRent);
@@ -35,6 +48,11 @@ export const db = {
   },
 
   async saveMatchResults(userId: string, results: any[]) {
+    if (!supabase) {
+      console.warn('Supabase not configured. Please update your .env file with actual Supabase credentials.');
+      return Promise.resolve({ id: 'mock-id', user_id: userId, results, created_at: new Date() });
+    }
+    
     const { data, error } = await supabase
       .from('match_results')
       .insert([{ user_id: userId, results, created_at: new Date() }])
