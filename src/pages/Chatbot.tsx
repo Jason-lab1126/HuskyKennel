@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Home, MapPin } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Home, MapPin, Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -19,6 +19,7 @@ export default function Chatbot() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -29,60 +30,30 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  const generateAIResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    // Sample responses based on keywords
-    if (message.includes('pet') || message.includes('dog') || message.includes('cat')) {
-      return "I can help you find pet-friendly housing! Many U District apartments welcome pets. Would you prefer a ground floor apartment for easier pet access, or are you looking for specific amenities like nearby parks or pet washing stations?";
+  const sendMessageToAPI = async (message: string): Promise<string> => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          userId: 'user-' + Date.now(), // Generate a simple user ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.response || 'Sorry, I couldn\'t process your request.';
+    } catch (error) {
+      console.error('Error calling chat API:', error);
+      throw new Error('Failed to get response from AI assistant. Please try again.');
     }
-    
-    if (message.includes('budget') || message.includes('cheap') || message.includes('affordable') || message.includes('$')) {
-      return "Budget is definitely important! U District has options ranging from $800-$3000+ per month. What's your ideal budget range? I can also suggest ways to save money like shared rooms, unofficial subleases, or apartments slightly further from campus.";
-    }
-    
-    if (message.includes('close') || message.includes('walk') || message.includes('campus') || message.includes('near')) {
-      return "Location is key for students! The closest apartments are within 5-10 minutes walk to campus but tend to be pricier. Would you be open to a 15-20 minute walk or bus ride for better value? I can also suggest the best bus routes from different areas.";
-    }
-    
-    if (message.includes('roommate') || message.includes('shared') || message.includes('social')) {
-      return "Looking for roommates can be great for both cost and social aspects! Are you hoping to find compatible roommates through the apartment complex, or would you prefer to find your own roommates first? I can suggest buildings known for their community atmosphere.";
-    }
-    
-    if (message.includes('quiet') || message.includes('study') || message.includes('peaceful')) {
-      return "A quiet environment is essential for academic success! I'd recommend looking at apartments away from The Ave party scene, buildings with good soundproofing, or upper floors. Would you prefer a more residential neighborhood like Ravenna over the busy U District core?";
-    }
-    
-    if (message.includes('furnished') || message.includes('furniture')) {
-      return "Furnished vs unfurnished is a big decision! Furnished places cost more monthly but save you from buying/moving furniture. Are you an international student or someone who moves frequently? That might make furnished worth it. I can show you both options.";
-    }
-    
-    if (message.includes('parking') || message.includes('car')) {
-      return "Parking in the U District can be challenging and expensive! Many students find it's cheaper to rely on public transit, biking, or walking. If you need parking, I'd recommend looking for apartments with dedicated spots rather than street parking. What's your transportation situation?";
-    }
-    
-    if (message.includes('gym') || message.includes('fitness') || message.includes('workout')) {
-      return "Great that you want to stay active! Some apartment complexes have their own gyms, plus UW has excellent facilities. Would you prefer in-building fitness amenities, or are you planning to use the campus recreation center?";
-    }
-    
-    if (message.includes('short') || message.includes('summer') || message.includes('quarter') || message.includes('sublease')) {
-      return "Short-term housing has unique considerations! Summer subleases are often cheaper since many students go home. Are you looking for official subleases through apartment management, or are you open to unofficial arrangements with students? Each has different advantages.";
-    }
-    
-    if (message.includes('studio') || message.includes('1 bed') || message.includes('2 bed') || message.includes('shared room')) {
-      return "Room type really affects your living experience! Studios are most affordable but can feel cramped for studying. 1-bedrooms offer privacy but cost more. Shared rooms save money but require compatible roommates. What's most important to you - privacy, budget, or social aspects?";
-    }
-    
-    // Default responses for general queries
-    const defaultResponses = [
-      "That's a great question! To give you the best recommendations, could you tell me more about your priorities? For example, budget range, preferred distance from campus, or any must-have amenities?",
-      "I'd love to help you find the perfect place! Are you looking for something specific like pet-friendly housing, short-term leases, or particular neighborhoods in the U District?",
-      "Let me help you narrow down your options. What's most important to you - staying within walking distance of campus, keeping costs low, or having specific amenities like parking or a gym?",
-      "I can definitely assist with that! To provide better suggestions, could you share your budget range and whether you're looking for a studio, shared room, or private bedroom?",
-      "The U District has so many great options! Would you like me to focus on official apartment complexes, sublease opportunities, or both? Also, any specific move-in timeframe?"
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
   const handleSendMessage = async () => {
@@ -98,19 +69,34 @@ export default function Chatbot() {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
+    setError(null);
 
-    // Simulate AI thinking time
-    setTimeout(() => {
-      const aiResponse: Message = {
+    try {
+      const aiResponse = await sendMessageToAPI(inputText);
+
+      const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateAIResponse(inputText),
+        text: aiResponse,
         sender: 'ai',
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, aiResponse]);
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (err) {
+      console.error('Error getting AI response:', err);
+      setError(err instanceof Error ? err.message : 'Failed to get response');
+
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Sorry, I encountered an error. Please try again or check your connection.',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -144,6 +130,22 @@ export default function Chatbot() {
           </p>
         </div>
 
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 bg-red-400 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">!</span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Chat Container */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Messages Area */}
@@ -157,8 +159,8 @@ export default function Chatbot() {
                   {/* Avatar */}
                   <div className={`flex-shrink-0 ${message.sender === 'user' ? 'ml-3' : 'mr-3'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.sender === 'user' 
-                        ? 'bg-purple-600' 
+                      message.sender === 'user'
+                        ? 'bg-purple-600'
                         : 'bg-gradient-to-br from-blue-500 to-purple-600'
                     }`}>
                       {message.sender === 'user' ? (
@@ -175,7 +177,7 @@ export default function Chatbot() {
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-100 text-gray-900'
                   }`}>
-                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
                   </div>
                 </div>
               </div>
@@ -191,10 +193,9 @@ export default function Chatbot() {
                     </div>
                   </div>
                   <div className="bg-gray-100 px-4 py-2 rounded-2xl">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="flex items-center space-x-2">
+                      <Loader2 size={16} className="animate-spin text-gray-500" />
+                      <span className="text-sm text-gray-600">AI is thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -234,6 +235,7 @@ export default function Chatbot() {
                   className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   rows={1}
                   style={{ minHeight: '44px', maxHeight: '120px' }}
+                  disabled={isTyping}
                 />
               </div>
               <button

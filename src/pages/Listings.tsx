@@ -1,7 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Heart, Filter, Search, Star, Loader2 } from 'lucide-react';
+import { MapPin, Heart, Filter, Search, Star, Loader2, AlertCircle } from 'lucide-react';
 import { HousingListing } from '../types';
 import { db } from '../lib/supabase';
+
+// Fallback data for when Supabase is not configured
+const fallbackListings: HousingListing[] = [
+  {
+    id: '1',
+    title: 'Cozy Studio Near UW Campus',
+    description: 'Perfect for students! This studio apartment is just a 5-minute walk from campus. Features include hardwood floors, updated kitchen, and in-unit laundry.',
+    rent: 1200,
+    type: 'studio',
+    bedrooms: 0,
+    bathrooms: 1,
+    address: '4500 University Way NE',
+    neighborhood: 'U District',
+    petFriendly: true,
+    furnished: false,
+    utilities: true,
+    parking: false,
+    images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    contactInfo: {
+      name: 'UW Housing Office',
+      email: 'housing@uw.edu',
+      phone: '(206) 543-4059'
+    },
+    source: 'manual',
+    scrapedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: '2',
+    title: '2BR Apartment with Parking',
+    description: 'Spacious 2-bedroom apartment with dedicated parking spot. Great for roommates! Close to grocery stores and restaurants.',
+    rent: 1800,
+    type: 'apartment',
+    bedrooms: 2,
+    bathrooms: 1,
+    address: '5200 Roosevelt Way NE',
+    neighborhood: 'U District',
+    petFriendly: false,
+    furnished: true,
+    utilities: false,
+    parking: true,
+    images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    contactInfo: {
+      name: 'U District Properties',
+      email: 'info@udistrictproperties.com',
+      phone: '(206) 555-0123'
+    },
+    source: 'manual',
+    scrapedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: '3',
+    title: 'Shared Room in Student House',
+    description: 'Affordable shared room in a student house. Great community atmosphere and close to campus. Utilities included.',
+    rent: 800,
+    type: 'shared',
+    bedrooms: 1,
+    bathrooms: 2,
+    address: '4700 15th Ave NE',
+    neighborhood: 'U District',
+    petFriendly: true,
+    furnished: true,
+    utilities: true,
+    parking: false,
+    images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    contactInfo: {
+      name: 'Student Housing Co-op',
+      email: 'housing@studentcoop.org',
+      phone: '(206) 555-0456'
+    },
+    source: 'manual',
+    scrapedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
 
 export default function Listings() {
   const [listings, setListings] = useState<HousingListing[]>([]);
@@ -10,6 +89,7 @@ export default function Listings() {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
   const [filters, setFilters] = useState({
     minRent: 0,
     maxRent: 5000,
@@ -24,16 +104,31 @@ export default function Listings() {
     try {
       setLoading(true);
       setError(null);
+      setUsingFallback(false);
       console.log('Starting to fetch listings...');
 
       const data = await db.getListings(filters);
       console.log('Fetched data:', data);
 
-      setListings(data);
-      setFilteredListings(data);
+      if (data && data.length > 0) {
+        setListings(data);
+        setFilteredListings(data);
+      } else {
+        // If no data from Supabase, use fallback
+        console.log('No listings found in database, using fallback data');
+        setListings(fallbackListings);
+        setFilteredListings(fallbackListings);
+        setUsingFallback(true);
+      }
     } catch (err) {
       console.error('Error fetching listings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load listings. Please try again.');
+
+      // Use fallback data on error
+      console.log('Using fallback data due to error');
+      setListings(fallbackListings);
+      setFilteredListings(fallbackListings);
+      setUsingFallback(true);
+      setError('Unable to load live data. Showing sample listings.');
     } finally {
       setLoading(false);
     }
@@ -43,7 +138,7 @@ export default function Listings() {
     fetchListings();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     let filtered = [...listings];
 
     // Search filter
@@ -69,7 +164,7 @@ export default function Listings() {
     setFilteredListings(filtered);
   }, [listings, searchTerm, filters]);
 
-    const getSourceBadge = (source: string) => {
+  const getSourceBadge = (source: string) => {
     const badges: Record<string, { color: string; label: string }> = {
       reddit: { color: 'bg-orange-100 text-orange-800', label: 'Reddit' },
       Reddit: { color: 'bg-orange-100 text-orange-800', label: 'Reddit' },
@@ -127,6 +222,22 @@ export default function Listings() {
           <p className="text-gray-600 mb-6">
             Browse all available housing options in the U District area
           </p>
+
+          {/* Fallback Data Notice */}
+          {usingFallback && (
+            <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-yellow-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Demo Mode:</strong> Showing sample listings. To see real data, please configure your Supabase credentials in the environment variables.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Search and Filters */}
           <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -187,10 +298,10 @@ export default function Listings() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                   >
                     <option value="">Any Type</option>
-                    <option value="Studio">Studio</option>
-                    <option value="1B1B">1B1B</option>
-                    <option value="2B1B">2B1B</option>
-                    <option value="2B2B">2B2B</option>
+                    <option value="studio">Studio</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="shared">Shared</option>
                   </select>
                 </div>
                 <div>
@@ -287,7 +398,7 @@ export default function Listings() {
         )}
 
         {/* Error State */}
-        {error && (
+        {error && !usingFallback && (
           <div className="text-center py-12">
             <div className="text-red-400 mb-4">
               <Search size={48} className="mx-auto" />
@@ -304,7 +415,7 @@ export default function Listings() {
         )}
 
         {/* Listings Grid */}
-        {!loading && !error && (
+        {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredListings.map((listing) => (
               <div key={listing.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -405,7 +516,7 @@ export default function Listings() {
           </div>
         )}
 
-        {!loading && !error && filteredListings.length === 0 && (
+        {!loading && filteredListings.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />
