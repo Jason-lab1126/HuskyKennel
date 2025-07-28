@@ -18,7 +18,7 @@ export interface HousingListing {
     email: string;
     phone?: string;
   };
-  source: 'manual' | 'reddit' | 'facebook' | 'apartments' | 'Reddit' | 'Trailside' | 'Strata' | 'The M' | 'Theory UDistrict' | 'The Standard' | 'Muriel\'s Landing' | 'HERE Seattle' | 'Bridge11' | 'Tripalink';
+  source: 'manual' | 'reddit' | 'facebook' | 'apartments' | 'Reddit' | 'Trailside' | 'Strata' | 'The M' | 'Theory UDistrict' | 'The Standard' | 'Muriel\'s Landing' | 'HERE Seattle' | 'Bridge11' | 'Tripalink' | 'Nolan' | 'Nora' | 'Hub U District' | 'LaVita' | 'Viola' | 'Sora' | 'Greta' | 'Fifty-Two' | 'The Stax' | 'Arista' | 'Parsonage' | 'U Place' | 'Twelve at U District' | 'ōLiv Seattle' | 'The Accolade' | 'Verve Flats' | 'Helix Ellipse' | 'Montclair' | 'Ori on the Ave' | 'Sundodger' | 'The Corydon' | 'Ivy Ridge';
   sourceUrl?: string;
   scrapedAt?: Date;
   createdAt?: Date;

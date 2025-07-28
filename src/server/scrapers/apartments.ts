@@ -17,53 +17,54 @@ interface ApartmentListing {
   source: string;
 }
 
+interface ScraperConfig {
+  name: string;
+  url: string;
+  selectors: {
+    container: string;
+    title: string;
+    price: string;
+    beds?: string;
+    baths?: string;
+    image?: string;
+  };
+  usePuppeteer?: boolean;
+}
+
 export class ApartmentsScraper {
-  private sites = [
-    {
-      name: 'Trailside',
-      url: 'https://www.trailsideudistrict.com/floorplans',
-      scraper: this.scrapeTrailside.bind(this)
-    },
-    {
-      name: 'Strata',
-      url: 'https://www.strataapts.com/floorplans',
-      scraper: this.scrapeStrata.bind(this)
-    },
-    {
-      name: 'The M',
-      url: 'https://www.themseattle.com/floorplans',
-      scraper: this.scrapeTheM.bind(this)
-    },
-    {
-      name: 'Theory UDistrict',
-      url: 'https://www.theoryudistrict.com/floorplans',
-      scraper: this.scrapeTheoryUDistrict.bind(this)
-    },
-    {
-      name: 'The Standard',
-      url: 'https://thestandardseattle.landmark-properties.com/',
-      scraper: this.scrapeTheStandard.bind(this)
-    },
-    {
-      name: 'Muriel\'s Landing',
-      url: 'https://www.murielslanding.com/floorplans',
-      scraper: this.scrapeMurielsLanding.bind(this)
-    },
-    {
-      name: 'HERE Seattle',
-      url: 'https://www.hereseattle.com/floorplans',
-      scraper: this.scrapeHereSeattle.bind(this)
-    },
-    {
-      name: 'Bridge11',
-      url: 'https://www.bridge11apartments.com/floorplans',
-      scraper: this.scrapeBridge11.bind(this)
-    },
-    {
-      name: 'Tripalink',
-      url: 'https://www.tripalink.com/seattle-uw',
-      scraper: this.scrapeTripalink.bind(this)
-    }
+  private apartmentSites: ScraperConfig[] = [
+    // Major U District Communities
+    { name: 'Trailside', url: 'https://www.trailsideudistrict.com/floorplans', selectors: { container: '.floor-plan-item', title: '.floor-plan-title', price: '.rent-amount', beds: '.bedroom-count', baths: '.bathroom-count' } },
+    { name: 'Strata', url: 'https://www.strataapts.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'The M', url: 'https://www.themseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Theory UDistrict', url: 'https://www.theoryudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'The Standard', url: 'https://thestandardseattle.landmark-properties.com/', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Muriel\'s Landing', url: 'https://www.murielslanding.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'HERE Seattle', url: 'https://www.hereseattle.com/floorplans', selectors: { container: '.floor-plan-card', title: '.plan-title', price: '.monthly-rent', beds: '.bed-count', baths: '.bath-count' } },
+    { name: 'Bridge11', url: 'https://www.bridge11apartments.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Tripalink', url: 'https://www.tripalink.com/seattle-uw', selectors: { container: '.property-card', title: '.property-name', price: '.rent', beds: '.bedrooms', baths: '.bathrooms' } },
+    { name: 'Nolan', url: 'https://www.nolanudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Nora', url: 'https://www.noraudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Hub U District', url: 'https://www.hubudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'LaVita', url: 'https://www.lavitaudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Viola', url: 'https://www.violaudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Sora', url: 'https://www.soraudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Greta', url: 'https://www.gretaudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Fifty-Two', url: 'https://www.fiftytwoapartments.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'The Stax', url: 'https://www.thestaxseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Arista', url: 'https://www.aristaudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Parsonage', url: 'https://www.parsonageudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'U Place', url: 'https://www.uplaceudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Twelve at U District', url: 'https://www.twelveudistrict.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'ōLiv Seattle', url: 'https://www.olivseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'The Accolade', url: 'https://www.theaccoladeseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Verve Flats', url: 'https://www.verveflatsseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Helix Ellipse', url: 'https://www.helixellipse.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Montclair', url: 'https://www.montclairseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Ori on the Ave', url: 'https://www.oriontheave.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Sundodger', url: 'https://www.sundodgerapartments.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'The Corydon', url: 'https://www.thecorydonseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } },
+    { name: 'Ivy Ridge', url: 'https://www.ivyridgeseattle.com/floorplans', selectors: { container: '.floor-plan', title: '.plan-name', price: '.price', beds: '.beds', baths: '.baths' } }
   ];
 
   private async setupBrowser() {
@@ -83,580 +84,148 @@ export class ApartmentsScraper {
     });
   }
 
-  private async scrapeTrailside(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
+  private async scrapeWithCheerio(site: ScraperConfig): Promise<ApartmentListing[]> {
     try {
-      console.log('🏢 Scraping Trailside U District...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
+      console.log(`🔍 Attempting static scraping for ${site.name}...`);
 
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.trailsideudistrict.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
+      const response = await axios.get(site.url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        timeout: 15000
       });
 
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan-item, .floorplan-item, .plan-item');
-        const listings: any[] = [];
+      const $ = cheerio.load(response.data);
+      const listings: ApartmentListing[] = [];
 
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.floor-plan-title, .plan-title, .name');
-          const rentElement = element.querySelector('.rent-amount, .price, .rent');
-          const bedElement = element.querySelector('.bedroom-count, .beds, .bedrooms');
-          const bathElement = element.querySelector('.bathroom-count, .baths, .bathrooms');
-          const imageElement = element.querySelector('img');
+      $(site.selectors.container).each((_, element) => {
+        const title = $(element).find(site.selectors.title).text().trim();
+        const priceText = $(element).find(site.selectors.price).text().trim();
+        const bedsText = site.selectors.beds ? $(element).find(site.selectors.beds).text().trim() : '';
+        const bathsText = site.selectors.baths ? $(element).find(site.selectors.baths).text().trim() : '';
+        const imageUrl = site.selectors.image ? $(element).find(site.selectors.image).attr('src') || '' : '';
 
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
+        if (title && priceText) {
+          const rent = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+          const bedrooms = parseInt(bedsText.replace(/[^0-9]/g, '')) || 0;
+          const bathrooms = parseInt(bathsText.replace(/[^0-9]/g, '')) || 0;
 
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `Trailside U District - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'Trailside U District, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Modern amenities', 'Close to UW campus', 'U District location'],
-                url: window.location.href,
-                source: 'Trailside'
-              });
-            }
+          if (rent > 0) {
+            listings.push({
+              title,
+              description: `${site.name} - ${title}`,
+              rent,
+              bedrooms,
+              bathrooms,
+              address: `${site.name}, U District`,
+              images: imageUrl ? [imageUrl] : [],
+              amenities: ['U District location', 'UW campus proximity'],
+              url: site.url,
+              source: site.name
+            });
           }
-        });
-
-        return listings;
+        }
       });
 
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Trailside: Found ${extractedListings.length} floorplans`);
+      console.log(`✅ Static scraping successful for ${site.name}: ${listings.length} listings`);
+      return listings;
 
     } catch (error) {
-      console.error('❌ Error scraping Trailside:', error);
+      console.log(`❌ Static scraping failed for ${site.name}, falling back to Puppeteer...`);
+      throw error;
     }
-
-    return listings;
   }
 
-  private async scrapeStrata(): Promise<ApartmentListing[]> {
+  private async scrapeWithPuppeteer(site: ScraperConfig): Promise<ApartmentListing[]> {
+    const browser = await this.setupBrowser();
     const listings: ApartmentListing[] = [];
 
     try {
-      console.log('🏢 Scraping Strata Apartments...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
+      console.log(`🤖 Using Puppeteer fallback for ${site.name}...`);
 
+      const page = await browser.newPage();
       await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.strataapts.com/floorplans', {
+
+      await page.goto(site.url, {
         waitUntil: 'networkidle2',
         timeout: 30000
       });
 
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan');
+      // Wait for content to load
+      await page.waitForTimeout(3000);
+
+      const extractedListings = await page.evaluate((selectors) => {
+        const elements = document.querySelectorAll(selectors.container);
         const listings: any[] = [];
 
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
+        elements.forEach((element) => {
+          const titleElement = element.querySelector(selectors.title);
+          const priceElement = element.querySelector(selectors.price);
+          const bedsElement = selectors.beds ? element.querySelector(selectors.beds) : null;
+          const bathsElement = selectors.baths ? element.querySelector(selectors.baths) : null;
+          const imageElement = selectors.image ? element.querySelector(selectors.image) : null;
 
-          if (titleElement) {
+          if (titleElement && priceElement) {
             const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
+            const priceText = priceElement.textContent?.trim() || '';
+            const bedsText = bedsElement?.textContent?.trim() || '';
+            const bathsText = bathsElement?.textContent?.trim() || '';
             const imageUrl = imageElement?.getAttribute('src') || '';
 
-            if (title && rent > 0) {
+            const rent = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+            const bedrooms = parseInt(bedsText.replace(/[^0-9]/g, '')) || 0;
+            const bathrooms = parseInt(bathsText.replace(/[^0-9]/g, '')) || 0;
+
+            if (rent > 0) {
               listings.push({
                 title,
-                description: `Strata Apartments - ${title}`,
                 rent,
                 bedrooms,
                 bathrooms,
-                address: 'Strata Apartments, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Luxury amenities', 'UW campus proximity', 'U District location'],
-                url: window.location.href,
-                source: 'Strata'
+                imageUrl
               });
             }
           }
         });
 
         return listings;
+      }, site.selectors);
+
+      extractedListings.forEach((item: any) => {
+        listings.push({
+          title: item.title,
+          description: `${site.name} - ${item.title}`,
+          rent: item.rent,
+          bedrooms: item.bedrooms,
+          bathrooms: item.bathrooms,
+          address: `${site.name}, U District`,
+          images: item.imageUrl ? [item.imageUrl] : [],
+          amenities: ['U District location', 'UW campus proximity'],
+          url: site.url,
+          source: site.name
+        });
       });
 
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Strata: Found ${extractedListings.length} floorplans`);
+      console.log(`✅ Puppeteer fallback successful for ${site.name}: ${listings.length} listings`);
+      return listings;
 
     } catch (error) {
-      console.error('❌ Error scraping Strata:', error);
+      console.error(`❌ Puppeteer fallback failed for ${site.name}:`, error);
+      return [];
+    } finally {
+      await browser.close();
     }
-
-    return listings;
   }
 
-  private async scrapeTheM(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
+  private async scrapeSite(site: ScraperConfig): Promise<ApartmentListing[]> {
     try {
-      console.log('🏢 Scraping The M Seattle...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.themseattle.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `The M Seattle - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'The M Seattle, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Modern living', 'UW campus access', 'U District location'],
-                url: window.location.href,
-                source: 'The M'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ The M: Found ${extractedListings.length} floorplans`);
-
+      // Try static scraping first
+      return await this.scrapeWithCheerio(site);
     } catch (error) {
-      console.error('❌ Error scraping The M:', error);
+      // Fallback to Puppeteer
+      console.log(`🔄 Falling back to Puppeteer for ${site.name}`);
+      return await this.scrapeWithPuppeteer(site);
     }
-
-    return listings;
-  }
-
-  private async scrapeTheoryUDistrict(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping Theory UDistrict...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.theoryudistrict.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `Theory UDistrict - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'Theory UDistrict, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Student housing', 'UW campus proximity', 'U District location'],
-                url: window.location.href,
-                source: 'Theory UDistrict'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Theory UDistrict: Found ${extractedListings.length} floorplans`);
-
-    } catch (error) {
-      console.error('❌ Error scraping Theory UDistrict:', error);
-    }
-
-    return listings;
-  }
-
-  private async scrapeTheStandard(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping The Standard...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://thestandardseattle.landmark-properties.com/', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit, .apartment');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name, .apartment-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `The Standard Seattle - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'The Standard Seattle, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Landmark Properties', 'UW campus access', 'U District location'],
-                url: window.location.href,
-                source: 'The Standard'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ The Standard: Found ${extractedListings.length} floorplans`);
-
-    } catch (error) {
-      console.error('❌ Error scraping The Standard:', error);
-    }
-
-    return listings;
-  }
-
-  private async scrapeMurielsLanding(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping Muriel\'s Landing...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.murielslanding.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `Muriel's Landing - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'Muriel\'s Landing, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Student housing', 'UW campus proximity', 'U District location'],
-                url: window.location.href,
-                source: 'Muriel\'s Landing'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Muriel's Landing: Found ${extractedListings.length} floorplans`);
-
-    } catch (error) {
-      console.error('❌ Error scraping Muriel\'s Landing:', error);
-    }
-
-    return listings;
-  }
-
-  private async scrapeHereSeattle(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping HERE Seattle...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.hereseattle.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `HERE Seattle - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'HERE Seattle, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Modern living', 'UW campus access', 'U District location'],
-                url: window.location.href,
-                source: 'HERE Seattle'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ HERE Seattle: Found ${extractedListings.length} floorplans`);
-
-    } catch (error) {
-      console.error('❌ Error scraping HERE Seattle:', error);
-    }
-
-    return listings;
-  }
-
-  private async scrapeBridge11(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping Bridge11...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.bridge11apartments.com/floorplans', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const floorPlanElements = document.querySelectorAll('.floor-plan, .plan, .floorplan, .unit');
-        const listings: any[] = [];
-
-        floorPlanElements.forEach((element) => {
-          const titleElement = element.querySelector('.plan-name, .name, .title, .unit-name');
-          const rentElement = element.querySelector('.price, .rent, .monthly-rent, .starting-price');
-          const bedElement = element.querySelector('.beds, .bedrooms, .bed-count');
-          const bathElement = element.querySelector('.baths, .bathrooms, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `Bridge11 Apartments - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'Bridge11 Apartments, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Student housing', 'UW campus proximity', 'U District location'],
-                url: window.location.href,
-                source: 'Bridge11'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Bridge11: Found ${extractedListings.length} floorplans`);
-
-    } catch (error) {
-      console.error('❌ Error scraping Bridge11:', error);
-    }
-
-    return listings;
-  }
-
-  private async scrapeTripalink(): Promise<ApartmentListing[]> {
-    const listings: ApartmentListing[] = [];
-
-    try {
-      console.log('🏢 Scraping Tripalink...');
-      const browser = await this.setupBrowser();
-      const page = await browser.newPage();
-
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-      await page.goto('https://www.tripalink.com/seattle-uw', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-
-      const extractedListings = await page.evaluate(() => {
-        const listingElements = document.querySelectorAll('.property-card, .listing-card, .apartment-card');
-        const listings: any[] = [];
-
-        listingElements.forEach((element) => {
-          const titleElement = element.querySelector('.property-name, .listing-name, .apartment-name');
-          const rentElement = element.querySelector('.rent, .price, .monthly-rent');
-          const bedElement = element.querySelector('.bedrooms, .beds, .bed-count');
-          const bathElement = element.querySelector('.bathrooms, .baths, .bath-count');
-          const imageElement = element.querySelector('img');
-
-          if (titleElement) {
-            const title = titleElement.textContent?.trim() || '';
-            const rentText = rentElement?.textContent?.trim() || '';
-            const rent = parseInt(rentText.replace(/[^0-9]/g, '')) || 0;
-            const bedrooms = parseInt(bedElement?.textContent?.trim() || '0');
-            const bathrooms = parseInt(bathElement?.textContent?.trim() || '0');
-            const imageUrl = imageElement?.getAttribute('src') || '';
-
-            if (title && rent > 0) {
-              listings.push({
-                title,
-                description: `Tripalink - ${title}`,
-                rent,
-                bedrooms,
-                bathrooms,
-                address: 'Tripalink Property, Seattle',
-                images: imageUrl ? [imageUrl] : [],
-                amenities: ['Student housing', 'Furnished options', 'UW campus proximity'],
-                url: window.location.href,
-                source: 'Tripalink'
-              });
-            }
-          }
-        });
-
-        return listings;
-      });
-
-      listings.push(...extractedListings);
-      await browser.close();
-      console.log(`✅ Tripalink: Found ${extractedListings.length} listings`);
-
-    } catch (error) {
-      console.error('❌ Error scraping Tripalink:', error);
-    }
-
-    return listings;
   }
 
   private convertToHousingListing(apartmentListing: ApartmentListing): HousingListing {
@@ -691,29 +260,39 @@ export class ApartmentsScraper {
     const startTime = Date.now();
     let totalListings = 0;
     let housingListings: HousingListing[] = [];
+    let successfulSites = 0;
+    let failedSites = 0;
+    let puppeteerFallbacks = 0;
 
     try {
-      console.log('🚀 Starting apartment scraping process...');
+      console.log('🚀 Starting comprehensive U District apartment scraping...');
+      console.log(`📊 Targeting ${this.apartmentSites.length} apartment communities`);
 
-      for (const site of this.sites) {
+      for (const site of this.apartmentSites) {
         console.log(`\n🏢 Processing ${site.name}...`);
 
         try {
-          const apartmentListings = await site.scraper();
+          const apartmentListings = await this.scrapeSite(site);
           totalListings += apartmentListings.length;
 
-          console.log(`📊 Found ${apartmentListings.length} listings from ${site.name}`);
+          if (apartmentListings.length > 0) {
+            successfulSites++;
+            console.log(`✅ ${site.name}: Found ${apartmentListings.length} listings`);
 
-          for (const apartmentListing of apartmentListings) {
-            const housingListing = this.convertToHousingListing(apartmentListing);
-            housingListings.push(housingListing);
-            console.log(`✅ Extracted: ${housingListing.title.substring(0, 50)}...`);
+            for (const apartmentListing of apartmentListings) {
+              const housingListing = this.convertToHousingListing(apartmentListing);
+              housingListings.push(housingListing);
+            }
+          } else {
+            failedSites++;
+            console.log(`⚠️  ${site.name}: No listings found`);
           }
 
-          // Add delay between sites to be respectful
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Add delay between sites
+          await new Promise(resolve => setTimeout(resolve, 2000));
 
         } catch (error) {
+          failedSites++;
           console.error(`❌ Error scraping ${site.name}:`, error);
         }
       }
@@ -727,8 +306,12 @@ export class ApartmentsScraper {
 
       const duration = Date.now() - startTime;
       console.log(`\n🎉 Apartment scraping completed in ${duration}ms`);
-      console.log(`📊 Total listings found: ${totalListings}`);
-      console.log(`🏠 Housing listings saved: ${housingListings.length}`);
+      console.log(`📊 Summary:`);
+      console.log(`   • Total communities: ${this.apartmentSites.length}`);
+      console.log(`   • Successful scrapes: ${successfulSites}`);
+      console.log(`   • Failed scrapes: ${failedSites}`);
+      console.log(`   • Total listings found: ${totalListings}`);
+      console.log(`   • Listings saved: ${housingListings.length}`);
 
       return {
         source: 'apartments',
